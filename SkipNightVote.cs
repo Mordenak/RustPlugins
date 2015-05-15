@@ -9,7 +9,7 @@ using Oxide.Core.Plugins;
 
 
 namespace Oxide.Plugins {
-    [Info("SkipNightVote", "Mordenak", "1.0.4", ResourceId = 1014)]
+    [Info("SkipNightVote", "Mordenak", "1.0.5", ResourceId = 1014)]
     class SkipNightVote : RustPlugin {
 
     	public class TimePoll : RustPlugin {
@@ -26,14 +26,15 @@ namespace Oxide.Plugins {
     			return true;
     		}
 
-    		public void voteDay(BasePlayer player) {
+    		public bool voteDay(BasePlayer player) {
     			var playerId = player.userID.ToString();
 
     			if (!checkVote(playerId)) {
     				SendReply(player, "You have already voted once.");
-    				return;
+    				return false;
     			}
     			votesReceived.Add(playerId, true);
+                return true;
     		}
 
     		public int tallyVotes() {
@@ -55,11 +56,12 @@ namespace Oxide.Plugins {
 
     	}
 
-    	public float requiredVotesPercentage = 0.5f; // % of votes needed to change time
+    	public float requiredVotesPercentage = 1.0f; // % of votes needed to change time
     	public float pollRetryTime = 5; // in minutes
     	public float pollTimer = 0.5f; // in minutes
     	public int sunsetHour = 18; // hour to start a vote
     	public int sunriseHour = 8; // hour to set if vote is successful
+        public bool displayVoteProgress = false; // determine whether to display a message for vote progress
 
     	bool readyToCheck = false;
     	
@@ -74,8 +76,17 @@ namespace Oxide.Plugins {
         		return;
         	}
 
-        	votePoll.voteDay(player);
+        	var checkVote = votePoll.voteDay(player);
+            if (!checkVote) return; // don't go further if the player has voted
         	checkVotes();
+            if (displayVoteProgress) {
+                if (votePoll != null) {
+                    int totalPlayers = BasePlayer.activePlayerList.Count;
+                    int votes = votePoll.tallyVotes();
+                    float percent = (float)votes / totalPlayers;
+                    MessageAllPlayers( string.Format("Vote progress: {0} / {1} ({2}%/{3}%)", votes, totalPlayers, (percent*100), (requiredVotesPercentage*100)) );
+                }
+            }
         }
 
         
@@ -147,6 +158,7 @@ namespace Oxide.Plugins {
         	Config["pollTimer"] = pollTimer;
         	Config["sunsetHour"] = sunsetHour;
         	Config["sunriseHour"] = sunriseHour;
+            Config["displayVoteProgress"] = displayVoteProgress;
             SaveConfig();
         }
 
@@ -167,6 +179,9 @@ namespace Oxide.Plugins {
 
 			if (Config["sunriseHour"] != null )
 				sunriseHour = (int)Config["sunriseHour"];
+
+            if (Config["displayVoteProgress"] != null )
+                displayVoteProgress = (bool)Config["displayVoteProgress"];
 
 			readyToCheck = true;
 			// it appears we don't want to get this too early...
