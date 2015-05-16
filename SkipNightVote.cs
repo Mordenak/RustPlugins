@@ -84,7 +84,7 @@ namespace Oxide.Plugins {
                     int totalPlayers = BasePlayer.activePlayerList.Count;
                     int votes = votePoll.tallyVotes();
                     float percent = (float)votes / totalPlayers;
-                    MessageAllPlayers( string.Format("Vote progress: {0} / {1} ({2}%/{3}%)", votes, totalPlayers, (percent*100), (requiredVotesPercentage*100)) );
+                    MessageAllPlayers( string.Format("Vote progress: {0} / {1} ({2}%/{3}%)", votes, totalPlayers, (int)(percent*100), (int)(requiredVotesPercentage*100)) );
                 }
             }
         }
