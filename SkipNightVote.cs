@@ -9,7 +9,7 @@ using Oxide.Core.Plugins;
 
 
 namespace Oxide.Plugins {
-    [Info("SkipNightVote", "Mordenak", "1.0.5", ResourceId = 1014)]
+    [Info("SkipNightVote", "Mordenak", "1.0.6", ResourceId = 1014)]
     class SkipNightVote : RustPlugin {
 
         public class TimePoll : RustPlugin {
